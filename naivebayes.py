@@ -3,92 +3,134 @@ import math
 import pandas as pd
 import random
 
-df = pd.read_csv(r'C:\Users\German\Desktop\Machine Learning\Sprint 2\First Assignment\nb_mushrooms_training.csv')
+df = pd.read_csv(
+    r'C:\Users\Andre\Google Drive\Master Studium Bamberg\AngewandteInformatik\2nd - WS18\KogSys-ML-M\Assignment2\nb_mushrooms_training.csv')
 dataset = df.drop(columns='class')
 dataset_in_vectors_training = dataset.values.tolist()
 
-df_2 = pd.read_csv(r'C:\Users\German\Desktop\Machine Learning\Sprint 2\First Assignment\nb_mushrooms_test.csv')
+df_2 = pd.read_csv(
+    r'C:\Users\Andre\Google Drive\Master Studium Bamberg\AngewandteInformatik\2nd - WS18\KogSys-ML-M\Assignment2\nb_mushrooms_test.csv')
 test_dataset = df_2.drop(columns='class')
 dataset_in_vectors_test = test_dataset.values.tolist()
 
 
-def naiveBayesTrain(dataset_in_vectors_training):
-
+def naiveBayesTrain(df):
     global negatives
     negatives = 0
     global positives
     positives = 0
 
-    for i in range(len(dataset_in_vectors_training)):
-        
-        #Vector
-        random_vector = dataset_in_vectors_training[i]
+    cap_shapes = {'b', 'c', 'x', 'f', 'k', 's'}
+    dict_cap_shape_eatable = dict()
+    dict_cap_shape_poisonous = dict()
 
-        #Number of eatable mushrooms
-        nr_eatable = df['class'][df['class'] == 'e'].count()
+    cap_surfaces = {'f', 'g', 'y', 's'}
+    dict_cap_surface_eatable = dict()
+    dict_cap_surface_poisonous = dict()
 
-        #Number of poisonous mushrooms
-        nr_poisonous = df['class'][df['class'] == 'p'].count()
+    bruises = {'t', 'f'}
+    dict_bruises_eatable = dict()
+    dict_bruises_poisonous = dict()
 
-        #Total
-        total = df['class'].count()
+    grill_sizes = {'b', 'n'}
+    dict_grill_size_eatable = dict()
+    dict_grill_size_posiouns = dict()
 
-        #Probability that a mushroom is eatable
-        prob_eatable = nr_eatable/total
+    grill_spacing = {'c', 'w', 'n'}
+    dict_grill_spacing_eatable = dict()
+    dict_grill_spacing_poisonous = dict()
 
-        #Probability that a mushroom is poisonous
-        prob_poisonous = nr_poisonous/total
+    for cap_shape in cap_shapes:
+        nr_total_cap_shape = len(df[['class', 'cap-shape']][df['cap-shape'] == cap_shape])
+        nr_eatable_cap_shape = len(df[['class', 'cap-shape']][df['cap-shape'] == cap_shape][df['class'] == 'e'])
+        nr_poisonous_cap_shape = len(df[['class', 'cap-shape']][df['cap-shape'] == cap_shape][df['class'] == 'p'])
+        dict_cap_shape_eatable[cap_shape] = nr_eatable_cap_shape / nr_total_cap_shape
+        dict_cap_shape_poisonous[cap_shape] = nr_poisonous_cap_shape / nr_total_cap_shape
 
+    for cap_surface in cap_surfaces:
+        nr_total_cap_surface = len(df[['class', 'cap-surface']][df['cap-surface'] == cap_surface])
+        nr_eatable_cap_surface = len(df[['class', 'cap-surface']][df['cap-surface'] == cap_surface][df['class'] == 'e'])
+        nr_poisonous_cap_surface = len(
+            df[['class', 'cap-surface']][df['cap-surface'] == cap_surface][df['class'] == 'p'])
+        dict_cap_surface_eatable[cap_surface] = nr_eatable_cap_surface / nr_total_cap_surface
+        dict_cap_surface_poisonous[cap_surface] = nr_poisonous_cap_surface / nr_total_cap_surface
 
-        val_1 = random_vector[0]
-        prob_cap_shape_eatable = df['cap-shape'][df['cap-shape'] == val_1].count() / nr_eatable
-        prob_cap_shape_poisonous = df['cap-shape'][df['cap-shape'] == val_1].count() / nr_poisonous
+    for bruise in bruises:
+        nr_total_bruises = len(df[['class', 'bruises']][df['bruises'] == bruise])
+        nr_eatable_bruises = len(df[['class', 'bruises']][df['bruises'] == bruise][df['class'] == 'e'])
+        nr_poisonous_bruises = len(df[['class', 'bruises']][df['bruises'] == bruise][df['class'] == 'p'])
+        dict_bruises_eatable[bruise] = nr_eatable_bruises / nr_total_bruises
+        dict_bruises_poisonous[bruise] = nr_poisonous_bruises / nr_total_bruises
 
-        val_2 = random_vector[1]
-        prob_cap_surface_eatable = df['cap-surface'][df['cap-surface'] == val_2].count() / nr_eatable
-        prob_cap_surface_poisonous = df['cap-surface'][df['cap-surface'] == val_2].count() / nr_poisonous
+    for gill_space in grill_spacing:
+        nr_total_gill_spacing = len(df[['class', 'gill-spacing']][df['gill-spacing'] == gill_space])
+        nr_eatable_gill_spacing = len(
+            df[['class', 'gill-spacing']][df['gill-spacing'] == gill_space][df['class'] == 'e'])
+        nr_poisonous_gill_spacing = len(
+            df[['class', 'gill-spacing']][df['gill-spacing'] == gill_space][df['class'] == 'p'])
+        if nr_eatable_gill_spacing == 0 & nr_poisonous_gill_spacing == 0:
+            dict_grill_spacing_eatable[gill_space] = 0.5
+            dict_grill_spacing_poisonous[gill_space] = 0.5
+        else:
+            dict_grill_spacing_eatable[gill_space] = nr_poisonous_gill_spacing / nr_total_gill_spacing
+            dict_grill_spacing_poisonous[gill_space] = nr_eatable_gill_spacing / nr_total_gill_spacing
 
-        val_3 = random_vector[2]
-        prob_bruises_eatable = df['bruises'][df['bruises'] == val_3].count() / nr_eatable
-        prob_bruises_poisonous = df['bruises'][df['bruises'] == val_3].count() / nr_poisonous
+    for gill_size in grill_sizes:
+        nr_total_gill_size = len(df[['class', 'gill-size']][df['gill-size'] == gill_size])
+        nr_eatable_gill_size = len(df[['class', 'gill-size']][df['gill-size'] == gill_size][df['class'] == 'e'])
+        nr_poisonous_gill_size = len(df[['class', 'gill-size']][df['gill-size'] == gill_size][df['class'] == 'p'])
+        dict_grill_size_eatable[gill_size] = nr_eatable_gill_size / nr_total_gill_size
+        dict_grill_size_posiouns[gill_size] = nr_poisonous_gill_size / nr_total_gill_size
 
-        val_4 = random_vector[3]
-        prob_gill_spacing_eatable = df['gill-spacing'][df['gill-spacing'] == val_4].count() / nr_eatable
-        prob_gill_spacing_poisonous = df['gill-spacing'][df['gill-spacing'] == val_4].count() / nr_poisonous
+    # Number of eatable mushrooms
+    nr_eatable = df['class'][df['class'] == 'e'].count()
 
-        val_5 = random_vector[4]
-        prob_gill_size_eatable = df['gill-size'][df['gill-size'] == val_5].count() / nr_eatable
-        prob_gill_size_poisonous = df['gill-size'][df['gill-size'] == val_5].count() / nr_poisonous
+    # Number of poisonous mushrooms
+    nr_poisonous = df['class'][df['class'] == 'p'].count()
 
-        nb_likelihood_eatable = (prob_eatable *(prob_cap_shape_eatable * prob_cap_surface_eatable * prob_bruises_eatable * prob_gill_spacing_eatable * prob_gill_size_eatable))
-        nb_likelihood_poisonous = (prob_poisonous *(prob_cap_shape_poisonous * prob_cap_surface_poisonous * prob_bruises_poisonous * prob_gill_spacing_poisonous * prob_gill_size_poisonous))
-        #print(nb_likelihood_eatable)
-        #print(nb_likelihood_poisonous)
+    # Total
+    total = df['class'].count()
 
-        #Normalization of nb_prob_eatable
+    # Probability that a mushroom is eatable
+    prob_eatable = nr_eatable / total
+
+    # Probability that a mushroom is poisonous
+    prob_poisonous = nr_poisonous / total
+
+    for i in range(len(dataset_in_vectors_test)):
+        # Vector
+        vector = dataset_in_vectors_test[i]
+
+        nb_likelihood_eatable = (prob_eatable * (
+                dict_cap_shape_eatable[vector[0]] * dict_cap_surface_eatable[vector[1]] * dict_bruises_eatable[
+            vector[2]] * dict_grill_spacing_eatable[vector[3]] * dict_grill_size_eatable[vector[4]]))
+        nb_likelihood_poisonous = (prob_poisonous * (
+                dict_cap_shape_poisonous[vector[0]] * dict_cap_surface_poisonous[vector[1]] * dict_bruises_poisonous[
+            vector[2]] * dict_grill_spacing_poisonous[vector[3]] * dict_grill_size_posiouns[vector[4]]))
+
+        # Normalization of nb_prob_eatable
         normalized_nb_prob_eatable = nb_likelihood_eatable / nb_likelihood_eatable + nb_likelihood_poisonous
-        #print(normalized_nb_prob_eatable)
+        # print(normalized_nb_prob_eatable)
 
-        #Normalization of nb_prob_poisonous
+        # Normalization of nb_prob_poisonous
         normalized_nb_prob_poisonous = nb_likelihood_poisonous / nb_likelihood_eatable + nb_likelihood_poisonous
-        #print(normalized_nb_prob_poisonous)
+        # print(normalized_nb_prob_poisonous)
 
-        if(normalized_nb_prob_eatable > normalized_nb_prob_poisonous):
-            #print("Classified as: Eatable")
+        if (normalized_nb_prob_eatable > normalized_nb_prob_poisonous):
+            # print("Classified as: Eatable")
             negatives += 1
         else:
-            #print("Classified as: Poisonous")
+            # print("Classified as: Poisonous")
             positives += 1
-        
+
     print(negatives)
     print(positives)
-        
 
 
 def main():
- print(naiveBayesTrain(dataset_in_vectors_test))
-    
+    print(naiveBayesTrain(df))
 
 
 if __name__ == "__main__":
     main()
+
