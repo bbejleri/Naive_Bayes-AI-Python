@@ -15,10 +15,10 @@ dataset_in_vectors_test = test_dataset.values.tolist()
 
 
 def naiveBayesTrain(df):
-    global algorithmEatables
-    algorithmEatables = 0
-    global algorithmPoisonous
-    algorithmPoisonous = 0
+    global algorithmNegatives
+    algorithmNegatives = 0
+    global algorithmPositives
+    algorithmPositives = 0
 
     cap_shapes = {'b', 'c', 'x', 'f', 'k', 's'}
     dict_cap_shape_eatable = dict()
@@ -117,15 +117,13 @@ def naiveBayesTrain(df):
         # print(normalized_nb_prob_poisonous)
 
         if (normalized_nb_prob_eatable > normalized_nb_prob_poisonous):
-            # print("Classified as: Eatable")
-            algorithmEatables += 1
+            algorithmNegatives += 1
         else:
-            # print("Classified as: Poisonous")
-            algorithmPoisonous += 1
+            # The relevant class (the 'positive' class) shall be poisonous(p)
+            algorithmPositives += 1
 
-
-    print(algorithmEatables)
-    print(algorithmPoisonous)
+    print(algorithmNegatives)
+    print(algorithmPositives)
 
 
 def main():
