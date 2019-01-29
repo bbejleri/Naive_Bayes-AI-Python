@@ -122,6 +122,15 @@ def naiveBayesTrain(df):
             # The relevant class (the 'positive' class) shall be poisonous(p)
             algorithmPositives += 1
 
+    # Variables for calculating the accuracy, the precision and the recall
+    truePositives = (nr_poisonous + algorithmPositives) - nr_poisonous
+    trueNegatives = (nr_eatable + algorithmNegatives) - nr_eatable
+    falsePositives = algorithmPositives-nr_poisonous if algorithmPositives-nr_poisonous >= 0 else 0
+    falseNegatives = algorithmNegatives-nr_eatable if algorithmNegatives-nr_eatable >= 0 else 0
+
+
+
+
     print(algorithmNegatives)
     print(algorithmPositives)
 
