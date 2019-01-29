@@ -10,8 +10,7 @@ dataset_in_vectors_training = dataset.values.tolist()
 
 df_test = pd.read_csv(
     r'C:\Users\Andre\Google Drive\Master Studium Bamberg\AngewandteInformatik\2nd - WS18\KogSys-ML-M\Assignment2\nb_mushrooms_test.csv')
-test_dataset = df_test.drop(columns='class')
-dataset_in_vectors_test = test_dataset.values.tolist()
+dataset_in_vectors_test = df_test.values.tolist()
 
 
 def naiveBayesTrain():
@@ -103,16 +102,21 @@ def naiveBayesTrain():
     # Probability that a mushroom is poisonous
     prob_poisonous = nr_poisonous / total
 
+    truePositives = 0
+    trueNegatives = 0
+    falsePositives = 0
+    falseNegatives = 0
+
     for i in range(len(dataset_in_vectors_test)):
         # Vector
         vector = dataset_in_vectors_test[i]
 
         nb_likelihood_eatable = (prob_eatable * (
-                dict_cap_shape_eatable[vector[0]] * dict_cap_surface_eatable[vector[1]] * dict_bruises_eatable[
-            vector[2]] * dict_gill_spacing_eatable[vector[3]] * dict_gill_size_eatable[vector[4]]))
+                dict_cap_shape_eatable[vector[1]] * dict_cap_surface_eatable[vector[2]] * dict_bruises_eatable[
+            vector[3]] * dict_gill_spacing_eatable[vector[4]] * dict_gill_size_eatable[vector[5]]))
         nb_likelihood_poisonous = (prob_poisonous * (
-                dict_cap_shape_poisonous[vector[0]] * dict_cap_surface_poisonous[vector[1]] * dict_bruises_poisonous[
-            vector[2]] * dict_gill_spacing_poisonous[vector[3]] * dict_gill_size_posiouns[vector[4]]))
+                dict_cap_shape_poisonous[vector[1]] * dict_cap_surface_poisonous[vector[2]] * dict_bruises_poisonous[
+            vector[3]] * dict_gill_spacing_poisonous[vector[4]] * dict_gill_size_posiouns[vector[5]]))
 
         # Normalization of nb_prob_eatable
         normalized_nb_prob_eatable = nb_likelihood_eatable / nb_likelihood_eatable + nb_likelihood_poisonous
@@ -124,15 +128,28 @@ def naiveBayesTrain():
 
         if normalized_nb_prob_eatable > normalized_nb_prob_poisonous:
             algorithmNegatives += 1
+            if vector[0] == 'e':
+                trueNegatives += 1
+            else:
+                falseNegatives += 1
+
         else:
             # The relevant class (the 'positive' class) shall be poisonous(p)
             algorithmPositives += 1
+            if vector[0] == 'p':
+                truePositives += 1
+            else:
+                falsePositives += 1
+
+    # Outputs
+    print("Algorithm classified %i mushrooms as eatable." % algorithmNegatives)
+    print("Algorithm classified %i mushrooms as poisonous." % algorithmPositives)
 
     # Variables for calculating the accuracy, the precision and the recall
-    truePositives = (nr_poisonous + algorithmPositives) - nr_poisonous
-    trueNegatives = (nr_eatable + algorithmNegatives) - nr_eatable
-    falsePositives = algorithmPositives-nr_poisonous if algorithmPositives-nr_poisonous >= 0 else 0
-    falseNegatives = algorithmNegatives-nr_eatable if algorithmNegatives-nr_eatable >= 0 else 0
+    print("True positives: %i" % truePositives)
+    print("True negatives: %i" % trueNegatives)
+    print("False posities: %i" % falsePositives)
+    print("False negatives: %i" % falseNegatives)
 
     # Accuracy
     accuracy = (truePositives + trueNegatives) / (truePositives + trueNegatives + falsePositives + falseNegatives)
@@ -145,11 +162,9 @@ def naiveBayesTrain():
     print("Recall: %.8f" % recall)
 
 
-
 def main():
     print(naiveBayesTrain())
 
 
 if __name__ == "__main__":
     main()
-
